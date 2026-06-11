@@ -1,10 +1,12 @@
 [project]
-name = "django-template"
+name = "django-minosse"
 version = "0.1.0"
-description = "Add your description here"
+description = "Role and permission management for Django projects."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["django>=5.2.5"]
+dependencies = [
+    "django>=5.0.0",
+]
 
 
 [dependency-groups]
@@ -14,8 +16,13 @@ dev = [
     "pylint>=3.3.8",
     "pylint-django>=2.6.1",
     "pytest>=8.4.1",
+    "pytest-django>=4.11.1",
 ]
 
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
+pythonpath = ["src", "."]
 
 [tool.black]
 line-length = 79
