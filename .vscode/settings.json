@@ -1,4 +1,8 @@
 {
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.plugins": [
+        "django-stubs"
+    ],
     "python.testing.pytestArgs": [
         "tests"
     ],

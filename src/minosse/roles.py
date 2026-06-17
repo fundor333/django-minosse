@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -18,31 +20,44 @@ class AbstractRole:
         return available_permissions.keys()
 
     @classmethod
-    def get_group_name(cls):
-        name = getattr(cls, "group_name", cls.__name__)
-        group = Group.objects.filter(name=name).first()
-        if not group:
-            group, _ = Group.objects.get_or_create(name=name)
-            available_permissions = getattr(cls, "available_permissions", {})
+    def _get_group_name(cls) -> str:
+        name: Any | str = getattr(cls, "group_name", cls.__name__)
+        return name
+
+    @classmethod
+    def _get_permission(
+        cls, all_permissions_flag: bool = False
+    ) -> list[Permission]:
+        available_permissions = getattr(cls, "available_permissions", {})
+        if all_permissions_flag is False:
+            available_permissions = {
+                k: v for k, v in available_permissions.items() if v is True
+            }
+
+        permissions = []
+        for perm in cls.get_permissions_list():
             content_type, _ = ContentType.objects.get_or_create(
                 app_label="minosse",
                 model="role",
             )
-            permissions = []
-            for perm in cls.get_permissions_list():
-                permission, _ = Permission.objects.get_or_create(
-                    codename=perm,
-                    content_type=content_type,
-                    defaults={"name": available_permissions.get(perm, perm)},
-                )
-                permissions.append(permission)
-            group.permissions.set(permissions)
-        return name
+            permission, _ = Permission.objects.get_or_create(
+                codename=perm,
+                content_type=content_type,
+                defaults={"name": available_permissions.get(perm, perm)},
+            )
+            permissions.append(permission)
+        return permissions
 
     @classmethod
-    def get_group(cls):
-        group_name = cls.get_group_name()
-        group = Group.objects.filter(name=group_name).first()
+    def _set_group_permissions(cls, group: Group):
+        group.permissions.clear()
+        group.permissions.add(*cls._get_permission())
+
+    @classmethod
+    def get_group(cls) -> Group:
+        group_name = cls._get_group_name()
+        group, _ = Group.objects.get_or_create(name=group_name)
+        cls._set_group_permissions(group)
         return group
 
     @classmethod

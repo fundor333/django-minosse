@@ -1,6 +1,8 @@
 import pytest
 from django.contrib.auth.models import Group
+from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from minosse.roles import AbstractRole
 
 
@@ -34,41 +36,86 @@ class TestGetPermissionsList:
         assert "can_manage" in NamedRole.get_permissions_list()
 
 
-@pytest.mark.django_db
 class TestGetGroupName:
     def test_returns_class_name_by_default(self):
-        assert SampleRole.get_group_name() == "SampleRole"
+        assert SampleRole._get_group_name() == "SampleRole"
 
     def test_returns_custom_group_name(self):
-        assert NamedRole.get_group_name() == "custom_group"
+        assert NamedRole._get_group_name() == "custom_group"
 
-    def test_creates_group_in_database(self):
-        SampleRole.get_group_name()
+
+@pytest.mark.django_db
+class TestGetPermission:
+    def test_returns_permission_objects_for_true_permissions(self):
+        perms = SampleRole._get_permission()
+        assert {p.codename for p in perms} == {"can_view"}
+
+    def test_excludes_false_and_non_bool_values(self):
+        perms = SampleRole._get_permission()
+        codenames = {p.codename for p in perms}
+        assert "can_edit" not in codenames
+        assert "info" not in codenames
+
+    def test_returns_empty_list_when_all_permissions_are_false(self):
+        class AllFalseRole(AbstractRole):
+            available_permissions = {"can_view": False, "can_edit": False}
+
+        assert AllFalseRole._get_permission() == []
+
+    def test_all_permissions_flag_true_yields_same_result(self):
+        # _get_permission iterates get_permissions_list() which always filters
+        # to True-only, so all_permissions_flag=True has no effect currently
+        default = {p.codename for p in SampleRole._get_permission()}
+        with_flag = {
+            p.codename
+            for p in SampleRole._get_permission(all_permissions_flag=True)
+        }
+        assert default == with_flag
+
+
+@pytest.mark.django_db
+class TestGetGroup:
+    def test_creates_group_on_first_call(self):
+        SampleRole.get_group()
         assert Group.objects.filter(name="SampleRole").exists()
 
     def test_creates_group_with_permissions(self):
-        SampleRole.get_group_name()
+        SampleRole.get_group()
         group = Group.objects.get(name="SampleRole")
         codenames = set(group.permissions.values_list("codename", flat=True))
         assert codenames == {"can_view"}
 
     def test_false_permissions_excluded_from_group(self):
-        SampleRole.get_group_name()
+        SampleRole.get_group()
         group = Group.objects.get(name="SampleRole")
         codenames = set(group.permissions.values_list("codename", flat=True))
         assert "can_edit" not in codenames
         assert "info" not in codenames
 
-    def test_idempotent_when_group_already_exists(self):
-        SampleRole.get_group_name()
-        SampleRole.get_group_name()
+    def test_idempotent_when_called_multiple_times(self):
+        SampleRole.get_group()
+        SampleRole.get_group()
         assert Group.objects.filter(name="SampleRole").count() == 1
 
+    def test_removes_extra_permissions_from_group(self):
+        group = SampleRole.get_group()
+        ct, _ = ContentType.objects.get_or_create(
+            app_label="auth", model="user"
+        )
+        extra, _ = Permission.objects.get_or_create(
+            codename="extra_perm",
+            content_type=ct,
+            defaults={"name": "Extra Permission"},
+        )
+        group.permissions.add(extra)
+        assert group.permissions.filter(codename="extra_perm").exists()
 
-@pytest.mark.django_db
-class TestGetGroup:
-    def test_returns_group_after_creation(self):
-        SampleRole.get_group_name()
+        SampleRole.get_group()
+        group.refresh_from_db()
+        codenames = set(group.permissions.values_list("codename", flat=True))
+        assert codenames == {"can_view"}
+
+    def test_returns_group_object(self):
         group = SampleRole.get_group()
         assert group is not None
         assert group.name == "SampleRole"
@@ -82,7 +129,6 @@ class TestGetGroup:
         assert group.name == "FreshRole"
 
     def test_returns_named_group(self):
-        NamedRole.get_group_name()
         group = NamedRole.get_group()
         assert group is not None
         assert group.name == "custom_group"
@@ -92,13 +138,11 @@ class TestGetGroup:
 class TestAddRemoveUserFromRole:
     def test_add_user_to_role(self):
         user = User.objects.create_user(username="user1", password="pass")
-        SampleRole.get_group_name()
         SampleRole.add_user_to_role(user)
         assert SampleRole.get_group() in user.groups.all()
 
     def test_remove_user_from_role(self):
         user = User.objects.create_user(username="user2", password="pass")
-        SampleRole.get_group_name()
         SampleRole.add_user_to_role(user)
         assert SampleRole.get_group() in user.groups.all()
         SampleRole.remove_user_from_role(user)

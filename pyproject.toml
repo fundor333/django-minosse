@@ -4,13 +4,12 @@ version = "0.1.0"
 description = "Role and permission management for Django projects."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "django>=5.0.0",
-]
+dependencies = ["django>=5.0.0"]
 
 
 [dependency-groups]
 dev = [
+    "django-stubs>=6.0.5",
     "git-cliff>=2.12.0",
     "pre-commit>=4.3.0",
     "pylint>=3.3.8",
