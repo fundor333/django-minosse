@@ -30,3 +30,11 @@ changelog:
 	@uv run git-cliff --config pyproject.toml --output CHANGELOG.md
 	@git add CHANGELOG.md
 	@git commit --amend --no-edit
+
+.PHONY: docs-build
+docs-build: ## Build the documentation site
+	@uv run zensical build --clean --config-file docs/zensical.toml
+
+.PHONY: docs-serve
+docs-serve: ## Serve the documentation locally at localhost:8001
+	@uv run zensical serve --config-file docs/zensical.toml --dev-addr localhost:8001
