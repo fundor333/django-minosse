@@ -8,6 +8,7 @@ DATABASES = {
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
+    "minosse",
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

@@ -1,4 +1,5 @@
 import pytest
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
@@ -63,8 +64,6 @@ class TestGetPermission:
         assert AllFalseRole._get_permission() == []
 
     def test_all_permissions_flag_true_yields_same_result(self):
-        # _get_permission iterates get_permissions_list() which always filters
-        # to True-only, so all_permissions_flag=True has no effect currently
         default = {p.codename for p in SampleRole._get_permission()}
         with_flag = {
             p.codename
@@ -155,3 +154,30 @@ class TestAddRemoveUserFromRole:
         user = User.objects.create_user(username="user3", password="pass")
         OrphanRole.add_user_to_role(user)
         assert user.groups.filter(name="OrphanRole").exists()
+
+
+@pytest.mark.django_db
+class TestUserHasRole:
+    def test_returns_true_for_user_with_role(self):
+        user = User.objects.create_user(username="member", password="pass")
+        SampleRole.add_user_to_role(user)
+        assert SampleRole.user_has_role(user) is True
+
+    def test_returns_false_for_user_without_role(self):
+        user = User.objects.create_user(username="outsider", password="pass")
+        assert SampleRole.user_has_role(user) is False
+
+    def test_returns_false_for_anonymous_user(self):
+        assert SampleRole.user_has_role(AnonymousUser()) is False
+
+    def test_role_check_is_group_specific(self):
+        user = User.objects.create_user(username="manager", password="pass")
+        NamedRole.add_user_to_role(user)
+        assert NamedRole.user_has_role(user) is True
+        assert SampleRole.user_has_role(user) is False
+
+    def test_returns_false_after_remove(self):
+        user = User.objects.create_user(username="ex_member", password="pass")
+        SampleRole.add_user_to_role(user)
+        SampleRole.remove_user_from_role(user)
+        assert SampleRole.user_has_role(user) is False

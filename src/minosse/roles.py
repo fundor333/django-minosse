@@ -4,7 +4,23 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
-registered_roles = {}
+
+class RoleRegistry:
+    """Registry that collects AbstractRole subclasses for bulk sync."""
+
+    def __init__(self):
+        self._roles: list[type] = []
+
+    def register(self, role_class: type) -> type:
+        if role_class not in self._roles:
+            self._roles.append(role_class)
+        return role_class
+
+    def get_roles(self) -> list[type]:
+        return list(self._roles)
+
+    def sync(self) -> list[Group]:
+        return [role.get_group() for role in self._roles]
 
 
 class AbstractRole:
