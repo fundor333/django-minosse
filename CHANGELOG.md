@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## 👨🏻‍💻🧋 Unreleased
 
+### 🔒 Security
+
+- Update dependencies and automate release tagging
+
 ### 🚀 Features
 
 - Add template tags
