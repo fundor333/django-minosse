@@ -50,6 +50,7 @@ nav = [
   { "Roles" = "roles.md" },
   { "Decorators" = "decorators.md" },
   { "Mixins" = "mixins.md" },
+  { "Template tags" = "templatetags.md" },
   { "Examples" = "examples.md" },
 ]
 

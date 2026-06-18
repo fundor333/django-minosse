@@ -119,6 +119,7 @@ if EditorRole.user_has_role(user):
 - Sync roles and permissions to Django's `Group` / `Permission` models
 - Protect function-based views with `@role_required` and `@permission_required`
 - Protect class-based views with `RoleRequiredMixin` and `PermissionRequiredMixin`
+- Check roles and permissions in templates with `|has_role` and `|has_perm` filters
 - Register roles centrally via `RoleRegistry` for bulk sync
 
 ## Documentation
