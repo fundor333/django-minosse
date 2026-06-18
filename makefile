@@ -33,8 +33,8 @@ changelog:
 
 .PHONY: docs-build
 docs-build: ## Build the documentation site
-	@uv run zensical build --clean --config-file docs/zensical.toml
+	@uv run zensical build --clean --config-file zensical.toml
 
 .PHONY: docs-serve
 docs-serve: ## Serve the documentation locally at localhost:8001
-	@uv run zensical serve --config-file docs/zensical.toml --dev-addr localhost:8001
+	@uv run zensical serve --config-file zensical.toml --dev-addr localhost:8001
