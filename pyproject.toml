@@ -113,11 +113,18 @@ trim = true
 conventional_commits = true
 # Exclude commits that do not match the conventional commits specification.
 
+commit_preprocessors = [
+    # 1. Gestisce: Merge branch 'hotfix/1.0.1'
+    { pattern = "^Merge branch '(.*)'", replace = "chore(merge): branch '${1}'" },
+
+    # 2. Gestisce: Merge remote-tracking branch 'origin/feature/1.0.0' into feature/1.0.0
+    { pattern = "^Merge remote-tracking branch '(.*)' into (.*)", replace = "chore(merge): remote '${1}' into ${2}" },
+]
+
 
 commit_parsers = [
 
     { message = ".\\d+\\.\\d+\\.\\d+", skip = true },
-    { message = "^Merge '[^']+' into 'master'", skip = true },
     { message = "^chore\\(release\\): prepare for", skip = true },
     { message = ".*format code with Black.*", skip = true },
 
