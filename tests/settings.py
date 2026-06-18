@@ -13,5 +13,14 @@ INSTALLED_APPS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": False,
+        "OPTIONS": {},
+    }
+]
+
 ROOT_URLCONF = "tests.urls"
 LOGIN_URL = "/accounts/login/"
