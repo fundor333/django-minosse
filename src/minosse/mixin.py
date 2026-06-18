@@ -1,9 +1,9 @@
-from django.contrib.auth.mixins import AccessMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from minosse.roles import AbstractRole
 
 
-class RoleRequiredMixin(AccessMixin):
-    required_role_class: AbstractRole = None
+class RoleRequiredMixin(LoginRequiredMixin):
+    required_role_class: type[AbstractRole] | None = None
 
     def dispatch(self, request, *args, **kwargs):
         if self.required_role_class is None:
@@ -16,8 +16,8 @@ class RoleRequiredMixin(AccessMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
-class PermissionRequiredMixin(AccessMixin):
-    required_permission_codename: str = None
+class PermissionRequiredMixin(LoginRequiredMixin):
+    required_permission_codename: str | None = None
 
     def dispatch(self, request, *args, **kwargs):
         if self.required_permission_codename is None:
