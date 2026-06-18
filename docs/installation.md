@@ -48,3 +48,26 @@ INSTALLED_APPS = [
     Run `python manage.py migrate` at least once so that the `auth` tables
     (`auth_group`, `auth_permission`, `django_content_type`) exist before calling
     `sync()` or `get_group()`.
+
+## Development setup
+
+If you want to contribute or run the test suite locally, clone the repository and
+install the dev dependencies with [uv](https://github.com/astral-sh/uv):
+
+```bash
+git clone https://github.com/Fundor333/django-minosse.git
+cd django-minosse
+make install
+```
+
+Run the tests:
+
+```bash
+make test
+```
+
+Serve the documentation locally at [localhost:8001](http://localhost:8001):
+
+```bash
+make docs-serve
+```
