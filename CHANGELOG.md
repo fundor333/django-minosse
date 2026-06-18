@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## 👨🏻‍💻🧋 Unreleased
+
+### 🔒 Security
+
+- Update dependencies and automate release tagging
+
+### 🚀 Features
+
+- Add template tags
 ## [1.0.1] - 2026-06-18
 
 ### ❓ Other (unconventional)
