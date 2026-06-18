@@ -12,30 +12,29 @@ install: ## Make venv and install requirements
 	@uv run --env-file=.env  pre-commit install
 	@pre-commit autoupdate
 
-migrate: ## Make and run migrations
-	@uv run --env-file=.env  python manage.py makemigrations
-	@uv run --env-file=.env  python manage.py migrate
-	@uv run --env-file=.env  python manage.py collectstatic --noinput
-
-.PHONY: test
-test: ## Run tests
-	@uv run --env-file=.env  skjold -v audit uv.lock
-	@uv run --env-file=.env  python manage.py test --verbosity=0 --parallel --failfast
-
 .PHONY: run
 run: ## Run the Django server
 	@uv run --env-file=.env  python manage.py runserver
 
-start: install migrate run ## Install requirements, apply migrations, then start development server
+start: install run ## Install requirements, apply migrations, then start development server
+
+.PHONY: test
+test: ## Run the test suite
+	@uv run --env-file=.env pytest
 
 precommit: ## Run pre-commit hooks
 	@git add . & uv run --env-file=.env pre-commit run --all-files
-
-deploy: ## make the deploy code
-	@uv export --no-hashes --format requirements-txt > requirements.txt
 
 .PHONY: changelog ## update CHANGELOG.md and amend it on the commit
 changelog:
 	@uv run git-cliff --config pyproject.toml --output CHANGELOG.md
 	@git add CHANGELOG.md
 	@git commit --amend --no-edit
+
+.PHONY: docs-build
+docs-build: ## Build the documentation site
+	@uv run zensical build --clean --config-file docs/zensical.toml
+
+.PHONY: docs-serve
+docs-serve: ## Serve the documentation locally at localhost:8001
+	@uv run zensical serve --config-file docs/zensical.toml --dev-addr localhost:8001
