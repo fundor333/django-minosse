@@ -53,7 +53,7 @@ from django.views import View
 from minosse.mixin import PermissionRequiredMixin
 
 class PublishView(PermissionRequiredMixin, View):
-    required_permission_codename = "can_publish"
+    required_permission_codename = "auth.can_publish"
 
     def post(self, request):
         ...
@@ -63,11 +63,16 @@ class PublishView(PermissionRequiredMixin, View):
 
 | Attribute | Type | Description |
 |---|---|---|
-| `required_permission_codename` | `str` | **Required.** Django permission codename (e.g. `"can_publish"`). |
+| `required_permission_codename` | `str` | **Required.** Full permission string in `app_label.codename` form (e.g. `"auth.can_publish"`). |
 
 !!! warning
 
     If `required_permission_codename` is not set, `dispatch()` raises `ValueError`.
+
+!!! note "Permission app label"
+
+    django-minosse links all permissions to the `auth.user` content type, so the
+    app label is always `auth`. Use `"auth.<codename>"`.
 
 ### Behaviour
 

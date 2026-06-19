@@ -83,25 +83,22 @@ class TestGetPermission:
         )
         assert perms["can_view"].name == expected
 
-    def test_permission_content_type_app_label_uses_class_module(self):
+    def test_permission_content_type_is_always_user_model(self):
+        user_ct = ContentType.objects.get_for_model(User)
         for perm in SampleRole._get_permission():
-            assert perm.content_type.app_label == SampleRole.__module__
+            assert perm.content_type == user_ct
 
-    def test_permission_content_type_model_uses_class_name(self):
-        for perm in SampleRole._get_permission():
-            assert perm.content_type.model == SampleRole.__name__
-
-    def test_app_label_and_model_name_override(self):
+    def test_app_label_and_model_name_override_affects_name_only(self):
         class OverrideRole(AbstractRole):
             app_label = "myapp"
             model_name = "MyModel"
-            available_permissions = {"can_do": True}
+            available_permissions = {"can_do_override": True}
 
+        user_ct = ContentType.objects.get_for_model(User)
         perms = OverrideRole._get_permission()
         assert len(perms) == 1
-        assert perms[0].content_type.app_label == "myapp"
-        assert perms[0].content_type.model == "MyModel"
-        assert perms[0].name == "myapp | MyModel | can_do"
+        assert perms[0].content_type == user_ct
+        assert perms[0].name == "myapp | MyModel | can_do_override"
 
 
 @pytest.mark.django_db

@@ -20,7 +20,7 @@ Load it at the top of your template:
 
 ---
 
-## `has_role`
+## `can`
 
 Filter that returns `True` if the user belongs to the group identified by the given
 name, `False` otherwise. Unauthenticated users always return `False`.
@@ -28,7 +28,7 @@ name, `False` otherwise. Unauthenticated users always return `False`.
 ```html+django
 {% load minosse_tags %}
 
-{% if request.user|has_role:"Editors" %}
+{% if request.user|can:"Editors" %}
   <a href="{% url 'editor_dashboard' %}">Editor panel</a>
 {% endif %}
 ```
@@ -50,7 +50,7 @@ name, `False` otherwise. Unauthenticated users always return `False`.
 
 ---
 
-## `has_perm`
+## `is`
 
 Filter that returns `True` if the user has the given permission codename.
 Accepts Django's full `app_label.codename` format.
@@ -58,7 +58,7 @@ Accepts Django's full `app_label.codename` format.
 ```html+django
 {% load minosse_tags %}
 
-{% if request.user|has_perm:"minosse.can_publish" %}
+{% if request.user|is:"auth.can_publish" %}
   <button type="submit">Publish</button>
 {% endif %}
 ```
@@ -71,11 +71,11 @@ Accepts Django's full `app_label.codename` format.
 
 !!! note "Permission format"
 
-    Permissions created by django-minosse live under the `minosse` app label, so
-    always prefix them with `minosse.`:
+    django-minosse links all permissions to the built-in `auth.user` content type,
+    so the app label is always `auth`:
 
     ```html+django
-    {% if request.user|has_perm:"minosse.can_delete_content" %}…{% endif %}
+    {% if request.user|is:"auth.can_delete_content" %}…{% endif %}
     ```
 
 ---
@@ -88,11 +88,11 @@ Accepts Django's full `app_label.codename` format.
 <nav>
   <a href="/">Home</a>
 
-  {% if request.user|has_role:"Editors" %}
+  {% if request.user|can:"Editors" %}
     <a href="{% url 'editor_dashboard' %}">Dashboard</a>
   {% endif %}
 
-  {% if request.user|has_perm:"minosse.can_publish" %}
+  {% if request.user|is:"auth.can_publish" %}
     <a href="{% url 'publish' %}">Publish</a>
   {% endif %}
 </nav>

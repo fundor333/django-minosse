@@ -23,12 +23,32 @@ class ModeratorRole(AbstractRole):
 
 ### Class attributes
 
-| Attribute | Type | Description |
-|---|---|---|
-| `group_name` | `str` | Name of the Django `Group`. Defaults to the class name. |
-| `available_permissions` | `dict[str, bool]` | Permission codenames mapped to `True` (active) or `False` (inactive). |
+| Attribute | Type | Default | Description |
+|---|---|---|---|
+| `group_name` | `str` | snake_case of the class name | Name of the Django `Group`. |
+| `available_permissions` | `dict[str, bool]` | `{}` | Permission codenames mapped to `True` (active) or `False` (inactive). |
+| `app_label` | `str` | class `__module__` | Affects the human-readable permission name shown in Django admin. Does **not** change the lookup key. |
+| `model_name` | `str` | class `__name__` | Affects the human-readable permission name shown in Django admin. Does **not** change the lookup key. |
 
 Only permissions with value `True` are assigned to the group on sync.
+
+!!! note "Permission lookup key"
+
+    All permissions created by django-minosse are linked to the `auth.user` content
+    type (Django's built-in User model). This means `app_label` in the lookup string
+    is always `auth`, regardless of the `app_label` class attribute.
+
+    Use `"auth.<codename>"` wherever Django expects a permission string:
+
+    ```python
+    user.has_perm("auth.can_publish")
+
+    @permission_required("auth.can_publish")
+    def my_view(request): ...
+    ```
+
+    The `app_label` and `model_name` class attributes only affect the human-readable
+    `name` field of the Django `Permission` object (visible in the admin).
 
 ### Class methods
 

@@ -79,7 +79,7 @@ def editor_dashboard(request):
     return render(request, "editor/dashboard.html")
 
 @login_required
-@permission_required("can_publish")
+@permission_required("auth.can_publish")
 def publish_article(request, pk):
     ...
 ```
@@ -98,7 +98,7 @@ class AdminDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "admin/dashboard.html"
 
 class DeleteContentView(PermissionRequiredMixin, View):
-    required_permission_codename = "can_delete_content"
+    required_permission_codename = "auth.can_delete_content"
 
     def post(self, request, pk):
         ...

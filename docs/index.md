@@ -14,7 +14,7 @@ views with decorators or mixins — all without a dedicated database table for r
 - Sync roles and permissions to Django's `Group` / `Permission` models
 - Protect function-based views with the `@role_required` and `@permission_required` decorators
 - Protect class-based views with `RoleRequiredMixin` and `PermissionRequiredMixin`
-- Check roles and permissions in templates with the `has_role` and `has_perm` filters
+- Check roles and permissions in templates with the `|can` and `|is` filters
 - Register roles centrally via `RoleRegistry` for bulk sync (e.g. from a management command)
 
 ## Quick example

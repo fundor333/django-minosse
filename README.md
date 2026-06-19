@@ -91,7 +91,7 @@ def editor_dashboard(request):
     ...
 
 @login_required
-@permission_required("can_publish")
+@permission_required("auth.can_publish")
 def publish_article(request, pk):
     ...
 ```
@@ -108,7 +108,7 @@ class EditorDashboardView(RoleRequiredMixin, TemplateView):
     template_name = "editor/dashboard.html"
 
 class PublishView(PermissionRequiredMixin, TemplateView):
-    required_permission_codename = "can_publish"
+    required_permission_codename = "auth.can_publish"
     template_name = "editor/publish.html"
 ```
 
@@ -130,7 +130,7 @@ if EditorRole.user_has_role(user):
 - Sync roles and permissions to Django's `Group` / `Permission` models
 - Protect function-based views with `@role_required` and `@permission_required`
 - Protect class-based views with `RoleRequiredMixin` and `PermissionRequiredMixin`
-- Check roles and permissions in templates with `|has_role` and `|has_perm` filters
+- Check roles and permissions in templates with `|can` and `|is` filters
 - Register roles centrally via `RoleRegistry` for bulk sync
 
 ## Documentation

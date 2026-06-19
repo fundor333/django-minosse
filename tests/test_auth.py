@@ -65,9 +65,7 @@ class TestRoleRequiredDecorator:
 class TestPermissionRequiredDecorator:
     def setup_method(self):
         self.factory = RequestFactory()
-        self.view = permission_required("minosse.can_edit_content")(
-            simple_view
-        )
+        self.view = permission_required("auth.can_edit_content")(simple_view)
 
     def test_allows_user_with_permission(self):
         user = User.objects.create_user(username="editor", password="pass")
@@ -156,7 +154,7 @@ class TestPermissionRequiredMixin:
         request = self.factory.get("/")
         request.user = user
         assert (
-            self._make_view("minosse.can_edit_content")(request).status_code
+            self._make_view("auth.can_edit_content")(request).status_code
             == 200
         )
 
@@ -167,12 +165,12 @@ class TestPermissionRequiredMixin:
         request = self.factory.get("/")
         request.user = user
         with pytest.raises(PermissionDenied):
-            self._make_view("minosse.can_edit_content")(request)
+            self._make_view("auth.can_edit_content")(request)
 
     def test_redirects_anonymous_user(self):
         request = self.factory.get("/protected/")
         request.user = AnonymousUser()
-        response = self._make_view("minosse.can_edit_content")(request)
+        response = self._make_view("auth.can_edit_content")(request)
         assert response.status_code == 302
 
     def test_raises_value_error_when_codename_not_set(self):

@@ -1,6 +1,7 @@
 import re
 from typing import Any
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -11,14 +12,16 @@ def _camel_to_snake(text: str) -> str:
 
 
 class RoleRegistry:
-    """Singleton registry that collects AbstractRole subclasses for bulk sync."""
+    """Singleton registry that collects"""
 
-    _instance = None  # type: RoleRegistry | None
+    """AbstractRole subclasses for bulk sync."""
+
+    _instance: "RoleRegistry | None" = None
 
     def __new__(cls) -> "RoleRegistry":
         if cls._instance is None:
             inst = super().__new__(cls)
-            inst._roles = []  # type: list[type]
+            inst._roles: list[type] = []
             cls._instance = inst
         return cls._instance
 
@@ -61,20 +64,12 @@ class AbstractRole:
     def _get_permission(
         cls, all_permissions_flag: bool = False
     ) -> list[Permission]:
-        available_permissions = getattr(cls, "available_permissions", {})
         app_label = getattr(cls, "app_label", cls.__module__)
         model_name = getattr(cls, "model_name", cls.__name__)
-        if all_permissions_flag is False:
-            available_permissions = {
-                k: v for k, v in available_permissions.items() if v is True
-            }
+        content_type = ContentType.objects.get_for_model(get_user_model())
 
         permissions = []
         for perm in cls.get_permissions_list():
-            content_type, _ = ContentType.objects.get_or_create(
-                app_label=app_label,
-                model=model_name,
-            )
             permission, _ = Permission.objects.get_or_create(
                 codename=perm,
                 content_type=content_type,

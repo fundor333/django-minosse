@@ -56,7 +56,7 @@ Restricts a view to users that have a specific permission codename.
 ```python
 from minosse.decorator import permission_required
 
-@permission_required("can_publish")
+@permission_required("auth.can_publish")
 def publish_article(request):
     ...
 ```
@@ -65,8 +65,13 @@ def publish_article(request):
 
 | Parameter | Type | Description |
 |---|---|---|
-| `permission_codename` | `str` | Django permission codename (e.g. `"can_publish"`). |
+| `permission_codename` | `str` | Full Django permission string in `app_label.codename` form (e.g. `"auth.can_publish"`). |
 
 ### Behaviour
 
 Internally calls `request.user.has_perm(permission_codename)`.
+
+!!! note "Permission app label"
+
+    django-minosse links all permissions to the `auth.user` content type, so the
+    app label is always `auth`. Use `"auth.<codename>"` when calling this decorator.
