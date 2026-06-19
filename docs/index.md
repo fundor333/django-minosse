@@ -22,9 +22,7 @@ views with decorators or mixins — all without a dedicated database table for r
 ```python
 from minosse.roles import AbstractRole, RoleRegistry
 
-registry = RoleRegistry()
-
-@registry.register
+@RoleRegistry().register
 class EditorRole(AbstractRole):
     group_name = "Editors"
     available_permissions = {
@@ -34,7 +32,7 @@ class EditorRole(AbstractRole):
     }
 
 # Sync all registered roles to the database
-registry.sync()
+RoleRegistry().sync()
 ```
 
 ```python

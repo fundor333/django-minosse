@@ -75,20 +75,19 @@ Returns the codenames of all active permissions (those with value `True`).
 
 ## RoleRegistry
 
-`RoleRegistry` acts as a central registry for all roles. Use it to collect roles and
-sync them all in one call — useful in management commands or app startup hooks.
+`RoleRegistry` is a **singleton** that acts as the central registry for all roles.
+Every call to `RoleRegistry()` returns the same instance, so roles registered anywhere
+in the project are always visible to the management command and to `sync()`.
 
 ```python
 from minosse.roles import AbstractRole, RoleRegistry
 
-registry = RoleRegistry()
-
-@registry.register
+@RoleRegistry().register
 class AdminRole(AbstractRole):
     group_name = "Admins"
     available_permissions = {"can_manage_users": True}
 
-@registry.register
+@RoleRegistry().register
 class ViewerRole(AbstractRole):
     group_name = "Viewers"
     available_permissions = {"can_view_reports": True}
@@ -110,5 +109,10 @@ Returns a copy of the list of registered role classes.
 Calls `get_group()` on every registered role and returns the resulting `Group` instances.
 
 ```python
-groups = registry.sync()
+RoleRegistry().sync()
 ```
+
+#### `_reset() -> None`
+
+Clears all registered roles. Intended for **test isolation only** — do not call this in
+production code.
