@@ -7,6 +7,7 @@ from minosse.roles import AbstractRole
 
 
 class EditorRole(AbstractRole):
+    app_label = "minosse"
     group_name = "Editors"
     available_permissions = {"can_publish": True}
 

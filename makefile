@@ -38,3 +38,13 @@ docs-build: ## Build the documentation site
 .PHONY: docs-serve
 docs-serve: ## Serve the documentation locally at localhost:8001
 	@uv run zensical serve --config-file zensical.toml --dev-addr localhost:8001
+
+
+hotfix: ##Upgrade of hotfix version
+	@uv version --bump patch
+
+minor: ##Upgrade of minor version
+	@uv version --bump minor
+
+major: ##Upgrade of major version
+	@uv version --bump major

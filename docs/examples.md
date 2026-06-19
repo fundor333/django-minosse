@@ -9,9 +9,7 @@ icon: lucide/book-open
 ```python title="myapp/roles.py"
 from minosse.roles import AbstractRole, RoleRegistry
 
-registry = RoleRegistry()
-
-@registry.register
+@RoleRegistry().register
 class AdminRole(AbstractRole):
     group_name = "Admins"
     available_permissions = {
@@ -20,7 +18,7 @@ class AdminRole(AbstractRole):
         "can_delete_content": True,
     }
 
-@registry.register
+@RoleRegistry().register
 class EditorRole(AbstractRole):
     group_name = "Editors"
     available_permissions = {
@@ -29,7 +27,7 @@ class EditorRole(AbstractRole):
         "can_delete_content": False,
     }
 
-@registry.register
+@RoleRegistry().register
 class ViewerRole(AbstractRole):
     group_name = "Viewers"
     available_permissions = {
@@ -37,12 +35,15 @@ class ViewerRole(AbstractRole):
     }
 ```
 
+`RoleRegistry` is a singleton — every call to `RoleRegistry()` returns the same instance,
+so roles registered across different modules are all visible in one place.
+
 Sync all roles (e.g. from a management command or `AppConfig.ready()`):
 
 ```python
-from myapp.roles import registry
+from minosse.roles import RoleRegistry
 
-registry.sync()
+RoleRegistry().sync()
 ```
 
 ---
@@ -105,22 +106,11 @@ class DeleteContentView(PermissionRequiredMixin, View):
 
 ---
 
-## Syncing roles via a management command
+## Syncing roles via the built-in management command
 
-```python title="myapp/management/commands/sync_roles.py"
-from django.core.management.base import BaseCommand
-from myapp.roles import registry
-
-class Command(BaseCommand):
-    help = "Sync all roles to the database"
-
-    def handle(self, *args, **options):
-        groups = registry.sync()
-        for group in groups:
-            self.stdout.write(f"Synced group: {group.name}")
-```
-
-Run with:
+django-minosse ships a `sync_roles` command that syncs all roles registered in the
+singleton to the database. Make sure your role modules are imported before the command
+runs (e.g. import them in `AppConfig.ready()`).
 
 ```bash
 python manage.py sync_roles

@@ -16,6 +16,10 @@ class SampleRole(AbstractRole):
     }
 
 
+class SampleRoleWithOtherName(SampleRole):
+    group_name = "AnotherGroup"
+
+
 class NamedRole(AbstractRole):
     group_name = "custom_group"
     available_permissions = {"can_manage": True}
@@ -38,8 +42,9 @@ class TestGetPermissionsList:
 
 
 class TestGetGroupName:
-    def test_returns_class_name_by_default(self):
-        assert SampleRole._get_group_name() == "SampleRole"
+    def test_returns_snake_case_by_default(self):
+        assert SampleRole._get_group_name() == "sample_role"
+        assert SampleRoleWithOtherName._get_group_name() == "AnotherGroup"
 
     def test_returns_custom_group_name(self):
         assert NamedRole._get_group_name() == "custom_group"
@@ -71,22 +76,49 @@ class TestGetPermission:
         }
         assert default == with_flag
 
+    def test_permission_name_follows_module_model_action_format(self):
+        perms = {p.codename: p for p in SampleRole._get_permission()}
+        expected = (
+            f"{SampleRole.__module__} | {SampleRole.__name__} | can_view"
+        )
+        assert perms["can_view"].name == expected
+
+    def test_permission_content_type_app_label_uses_class_module(self):
+        for perm in SampleRole._get_permission():
+            assert perm.content_type.app_label == SampleRole.__module__
+
+    def test_permission_content_type_model_uses_class_name(self):
+        for perm in SampleRole._get_permission():
+            assert perm.content_type.model == SampleRole.__name__
+
+    def test_app_label_and_model_name_override(self):
+        class OverrideRole(AbstractRole):
+            app_label = "myapp"
+            model_name = "MyModel"
+            available_permissions = {"can_do": True}
+
+        perms = OverrideRole._get_permission()
+        assert len(perms) == 1
+        assert perms[0].content_type.app_label == "myapp"
+        assert perms[0].content_type.model == "MyModel"
+        assert perms[0].name == "myapp | MyModel | can_do"
+
 
 @pytest.mark.django_db
 class TestGetGroup:
     def test_creates_group_on_first_call(self):
         SampleRole.get_group()
-        assert Group.objects.filter(name="SampleRole").exists()
+        assert Group.objects.filter(name="sample_role").exists()
 
     def test_creates_group_with_permissions(self):
         SampleRole.get_group()
-        group = Group.objects.get(name="SampleRole")
+        group = Group.objects.get(name="sample_role")
         codenames = set(group.permissions.values_list("codename", flat=True))
         assert codenames == {"can_view"}
 
     def test_false_permissions_excluded_from_group(self):
         SampleRole.get_group()
-        group = Group.objects.get(name="SampleRole")
+        group = Group.objects.get(name="sample_role")
         codenames = set(group.permissions.values_list("codename", flat=True))
         assert "can_edit" not in codenames
         assert "info" not in codenames
@@ -94,7 +126,7 @@ class TestGetGroup:
     def test_idempotent_when_called_multiple_times(self):
         SampleRole.get_group()
         SampleRole.get_group()
-        assert Group.objects.filter(name="SampleRole").count() == 1
+        assert Group.objects.filter(name="sample_role").count() == 1
 
     def test_removes_extra_permissions_from_group(self):
         group = SampleRole.get_group()
@@ -117,7 +149,7 @@ class TestGetGroup:
     def test_returns_group_object(self):
         group = SampleRole.get_group()
         assert group is not None
-        assert group.name == "SampleRole"
+        assert group.name == "sample_role"
 
     def test_creates_group_implicitly(self):
         class FreshRole(AbstractRole):
@@ -125,7 +157,7 @@ class TestGetGroup:
 
         group = FreshRole.get_group()
         assert group is not None
-        assert group.name == "FreshRole"
+        assert group.name == "fresh_role"
 
     def test_returns_named_group(self):
         group = NamedRole.get_group()
@@ -153,7 +185,7 @@ class TestAddRemoveUserFromRole:
 
         user = User.objects.create_user(username="user3", password="pass")
         OrphanRole.add_user_to_role(user)
-        assert user.groups.filter(name="OrphanRole").exists()
+        assert user.groups.filter(name="orphan_role").exists()
 
 
 @pytest.mark.django_db

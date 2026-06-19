@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 from django.contrib.auth.models import Group
@@ -5,11 +6,21 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
 
-class RoleRegistry:
-    """Registry that collects AbstractRole subclasses for bulk sync."""
+def _camel_to_snake(text: str) -> str:
+    return re.sub(r"(?<!^)(?=[A-Z])", "_", text).lower()
 
-    def __init__(self):
-        self._roles: list[type] = []
+
+class RoleRegistry:
+    """Singleton registry that collects AbstractRole subclasses for bulk sync."""
+
+    _instance = None  # type: RoleRegistry | None
+
+    def __new__(cls) -> "RoleRegistry":
+        if cls._instance is None:
+            inst = super().__new__(cls)
+            inst._roles = []  # type: list[type]
+            cls._instance = inst
+        return cls._instance
 
     def register(self, role_class: type) -> type:
         if role_class not in self._roles:
@@ -21,6 +32,10 @@ class RoleRegistry:
 
     def sync(self) -> list[Group]:
         return [role.get_group() for role in self._roles]
+
+    def _reset(self) -> None:
+        """Clear all registered roles. Intended for test isolation only."""
+        self._roles = []
 
 
 class AbstractRole:
@@ -37,7 +52,9 @@ class AbstractRole:
 
     @classmethod
     def _get_group_name(cls) -> str:
-        name: Any | str = getattr(cls, "group_name", cls.__name__)
+        name: Any | str = getattr(
+            cls, "group_name", _camel_to_snake(cls.__name__)
+        )
         return name
 
     @classmethod
@@ -45,6 +62,8 @@ class AbstractRole:
         cls, all_permissions_flag: bool = False
     ) -> list[Permission]:
         available_permissions = getattr(cls, "available_permissions", {})
+        app_label = getattr(cls, "app_label", cls.__module__)
+        model_name = getattr(cls, "model_name", cls.__name__)
         if all_permissions_flag is False:
             available_permissions = {
                 k: v for k, v in available_permissions.items() if v is True
@@ -53,13 +72,13 @@ class AbstractRole:
         permissions = []
         for perm in cls.get_permissions_list():
             content_type, _ = ContentType.objects.get_or_create(
-                app_label="minosse",
-                model="role",
+                app_label=app_label,
+                model=model_name,
             )
             permission, _ = Permission.objects.get_or_create(
                 codename=perm,
                 content_type=content_type,
-                defaults={"name": available_permissions.get(perm, perm)},
+                defaults={"name": f"{app_label} | {model_name} | {perm}"},
             )
             permissions.append(permission)
         return permissions
@@ -92,8 +111,7 @@ class AbstractRole:
     def user_has_role(cls, user):
         if not user.is_authenticated:
             return False
-        group_name = getattr(cls, "group_name", cls.__name__)
-        return user.groups.filter(name=group_name).exists()
+        return user.groups.filter(name=cls._get_group_name()).exists()
 
     class Meta:
         abstract = True
