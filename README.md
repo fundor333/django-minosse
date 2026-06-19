@@ -25,10 +25,21 @@ or with [uv](https://github.com/astral-sh/uv):
 uv add django-minosse
 ```
 
-No changes to `INSTALLED_APPS` are needed. django-minosse relies on
-`django.contrib.auth` and `django.contrib.contenttypes`, which are already present in
-every Django project. Run `python manage.py migrate` at least once so the auth tables
-exist before calling `sync()` or `get_group()`.
+Add `"minosse"` to `INSTALLED_APPS`, alongside the standard `auth` and `contenttypes`
+apps that are already present in every Django project:
+
+```python
+INSTALLED_APPS = [
+    ...
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "minosse",
+    ...
+]
+```
+
+Run `python manage.py migrate` at least once so the auth tables exist before calling
+`sync()` or `get_group()`.
 
 ## Quick start
 
