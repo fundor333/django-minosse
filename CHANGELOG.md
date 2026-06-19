@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## 👨🏻‍💻🧋 Unreleased
 
+### Miscellaneous Tasks
+
+- Branch 'hotfix/fix_build_changelog'
+
+### ❓ Other (unconventional)
+
+- Preprocess merge commits for changelog generation
+
 ### 🔒 Security
 
 - Update dependencies and automate release tagging
