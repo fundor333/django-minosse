@@ -13,10 +13,12 @@ from minosse.roles import AbstractRole
 
 
 class AdminRole(AbstractRole):
+    app_label = "minosse"
     available_permissions = {"can_admin": True}
 
 
 class EditorRole(AbstractRole):
+    app_label = "minosse"
     available_permissions = {"can_edit_content": True}
 
 
