@@ -5,11 +5,21 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
 
-class RoleRegistry:
-    """Registry that collects AbstractRole subclasses for bulk sync."""
+def _camel_to_snake(text: str) -> str:
+    return re.sub(r"(?<!^)(?=[A-Z])", "_", text).lower()
 
-    def __init__(self):
-        self._roles: list[type] = []
+
+class RoleRegistry:
+    """Singleton registry that collects AbstractRole subclasses for bulk sync."""
+
+    _instance = None  # type: RoleRegistry | None
+
+    def __new__(cls) -> "RoleRegistry":
+        if cls._instance is None:
+            inst = super().__new__(cls)
+            inst._roles = []  # type: list[type]
+            cls._instance = inst
+        return cls._instance
 
     def register(self, role_class: type) -> type:
         if role_class not in self._roles:
@@ -21,6 +31,10 @@ class RoleRegistry:
 
     def sync(self) -> list[Group]:
         return [role.get_group() for role in self._roles]
+
+    def _reset(self) -> None:
+        """Clear all registered roles. Intended for test isolation only."""
+        self._roles = []
 
 
 class AbstractRole:
