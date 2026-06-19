@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 from django.contrib.auth.models import Group
@@ -51,7 +52,9 @@ class AbstractRole:
 
     @classmethod
     def _get_group_name(cls) -> str:
-        name: Any | str = getattr(cls, "group_name", cls.__name__)
+        name: Any | str = getattr(
+            cls, "group_name", _camel_to_snake(cls.__name__)
+        )
         return name
 
     @classmethod
@@ -59,6 +62,8 @@ class AbstractRole:
         cls, all_permissions_flag: bool = False
     ) -> list[Permission]:
         available_permissions = getattr(cls, "available_permissions", {})
+        app_label = getattr(cls, "app_label", cls.__module__)
+        model_name = getattr(cls, "model_name", cls.__name__)
         if all_permissions_flag is False:
             available_permissions = {
                 k: v for k, v in available_permissions.items() if v is True
@@ -67,13 +72,13 @@ class AbstractRole:
         permissions = []
         for perm in cls.get_permissions_list():
             content_type, _ = ContentType.objects.get_or_create(
-                app_label="minosse",
-                model="role",
+                app_label=app_label,
+                model=model_name,
             )
             permission, _ = Permission.objects.get_or_create(
                 codename=perm,
                 content_type=content_type,
-                defaults={"name": available_permissions.get(perm, perm)},
+                defaults={"name": f"{app_label} | {model_name} | {perm}"},
             )
             permissions.append(permission)
         return permissions
@@ -106,8 +111,7 @@ class AbstractRole:
     def user_has_role(cls, user):
         if not user.is_authenticated:
             return False
-        group_name = getattr(cls, "group_name", cls.__name__)
-        return user.groups.filter(name=group_name).exists()
+        return user.groups.filter(name=cls._get_group_name()).exists()
 
     class Meta:
         abstract = True
