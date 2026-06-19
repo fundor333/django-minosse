@@ -14,9 +14,11 @@ class SampleRole(AbstractRole):
         "not a_permission": "True",
         "info": "This is just an informational entry, not a permission",
     }
-    
+
+
 class SampleRoleWithOtherName(SampleRole):
     group_name = "AnotherGroup"
+
 
 class NamedRole(AbstractRole):
     group_name = "custom_group"
