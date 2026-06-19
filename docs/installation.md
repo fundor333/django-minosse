@@ -27,21 +27,24 @@ Install django-minosse with pip or uv:
 
 ## Django setup
 
-No additional `INSTALLED_APPS` entry is required. django-minosse uses Django's built-in
-`auth` models (`Group`, `Permission`, `ContentType`) which are already included in every
-Django project.
-
-Make sure `django.contrib.auth` and `django.contrib.contenttypes` are in your
-`INSTALLED_APPS` (they are by default):
+Add `"minosse"` to your `INSTALLED_APPS`, along with the standard `auth` and
+`contenttypes` apps (present by default in every Django project):
 
 ```python title="settings.py"
 INSTALLED_APPS = [
     ...
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    "minosse",
     ...
 ]
 ```
+
+`"minosse"` is required for two reasons:
+
+- Django discovers template tag libraries (`{% load minosse_tags %}`) only inside
+  apps listed in `INSTALLED_APPS`.
+- The `sync_roles` management command is registered under the `minosse` app.
 
 !!! note "Database migrations"
 

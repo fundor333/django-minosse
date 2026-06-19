@@ -13,6 +13,11 @@ Load it at the top of your template:
 {% load minosse_tags %}
 ```
 
+!!! warning "INSTALLED_APPS required"
+
+    `"minosse"` must be present in `INSTALLED_APPS` for Django to find the
+    `minosse_tags` library. See [Installation](installation.md) for the full setup.
+
 ---
 
 ## `has_role`
