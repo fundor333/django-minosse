@@ -20,7 +20,7 @@ Load it at the top of your template:
 
 ---
 
-## `can`
+## `is`
 
 Filter that returns `True` if the user belongs to the group identified by the given
 name, `False` otherwise. Unauthenticated users always return `False`.
@@ -28,7 +28,7 @@ name, `False` otherwise. Unauthenticated users always return `False`.
 ```html+django
 {% load minosse_tags %}
 
-{% if request.user|can:"Editors" %}
+{% if request.user|is:"Editors" %}
   <a href="{% url 'editor_dashboard' %}">Editor panel</a>
 {% endif %}
 ```
@@ -50,7 +50,7 @@ name, `False` otherwise. Unauthenticated users always return `False`.
 
 ---
 
-## `is`
+## `can`
 
 Filter that returns `True` if the user has the given permission codename.
 Accepts Django's full `app_label.codename` format.
@@ -58,7 +58,7 @@ Accepts Django's full `app_label.codename` format.
 ```html+django
 {% load minosse_tags %}
 
-{% if request.user|is:"auth.can_publish" %}
+{% if request.user|can:"auth.can_publish" %}
   <button type="submit">Publish</button>
 {% endif %}
 ```
@@ -75,7 +75,7 @@ Accepts Django's full `app_label.codename` format.
     so the app label is always `auth`:
 
     ```html+django
-    {% if request.user|is:"auth.can_delete_content" %}…{% endif %}
+    {% if request.user|can:"auth.can_delete_content" %}…{% endif %}
     ```
 
 ---
@@ -88,11 +88,11 @@ Accepts Django's full `app_label.codename` format.
 <nav>
   <a href="/">Home</a>
 
-  {% if request.user|can:"Editors" %}
+  {% if request.user|is:"Editors" %}
     <a href="{% url 'editor_dashboard' %}">Dashboard</a>
   {% endif %}
 
-  {% if request.user|is:"auth.can_publish" %}
+  {% if request.user|can:"auth.can_publish" %}
     <a href="{% url 'publish' %}">Publish</a>
   {% endif %}
 </nav>

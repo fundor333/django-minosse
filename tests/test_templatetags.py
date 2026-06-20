@@ -23,7 +23,7 @@ class TestHasRoleFilter:
         EditorRole.add_user_to_role(user)
         result = render(
             "{% load minosse_tags %}"
-            "{% if user|can:'Editors' %}yes{% endif %}",
+            "{% if user|is:'Editors' %}yes{% endif %}",
             {"user": user},
         )
         assert result == "yes"
@@ -32,7 +32,7 @@ class TestHasRoleFilter:
         user = User.objects.create_user(username="viewer", password="pass")
         result = render(
             "{% load minosse_tags %}"
-            "{% if user|can:'Editors' %}yes{% endif %}",
+            "{% if user|is:'Editors' %}yes{% endif %}",
             {"user": user},
         )
         assert result == ""
@@ -40,7 +40,7 @@ class TestHasRoleFilter:
     def test_returns_empty_for_anonymous_user(self):
         result = render(
             "{% load minosse_tags %}"
-            "{% if user|can:'Editors' %}yes{% endif %}",
+            "{% if user|is:'Editors' %}yes{% endif %}",
             {"user": AnonymousUser()},
         )
         assert result == ""
@@ -49,7 +49,7 @@ class TestHasRoleFilter:
         user = User.objects.create_user(username="nobody", password="pass")
         result = render(
             "{% load minosse_tags %}"
-            "{% if user|can:'NonExistent' %}yes{% endif %}",
+            "{% if user|is:'NonExistent' %}yes{% endif %}",
             {"user": user},
         )
         assert result == ""
@@ -63,7 +63,7 @@ class TestHasPermFilter:
         user = User.objects.get(pk=user.pk)  # clear Django's permission cache
         result = render(
             "{% load minosse_tags %}"
-            "{% if user|is:'auth.can_publish' %}yes{% endif %}",
+            "{% if user|can:'auth.can_publish' %}yes{% endif %}",
             {"user": user},
         )
         assert result == "yes"
@@ -72,7 +72,7 @@ class TestHasPermFilter:
         user = User.objects.create_user(username="noperm", password="pass")
         result = render(
             "{% load minosse_tags %}"
-            "{% if user|is:'auth.can_publish' %}yes{% endif %}",
+            "{% if user|can:'auth.can_publish' %}yes{% endif %}",
             {"user": user},
         )
         assert result == ""
@@ -80,7 +80,7 @@ class TestHasPermFilter:
     def test_returns_empty_for_anonymous_user(self):
         result = render(
             "{% load minosse_tags %}"
-            "{% if user|is:'auth.can_publish' %}yes{% endif %}",
+            "{% if user|can:'auth.can_publish' %}yes{% endif %}",
             {"user": AnonymousUser()},
         )
         assert result == ""
